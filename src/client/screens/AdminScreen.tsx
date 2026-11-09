@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Dialog, PageContentBlock, PanelLink, Select, Spinner, TitledGreyBox, httpErrorToHuman, toast, usePanelNavigate } from '@pterodactyl/sdk';
+import { Button, Dialog, PageContentBlock, PanelLink, Select, ServerError, Spinner, TitledGreyBox, httpErrorToHuman, toast, usePanelNavigate } from '@pterodactyl/sdk';
 import { deleteGame, getAdmin, keys, saveDefaultQuota, saveGame, saveLocations, type Admin, type Game, type GameInput, type Limits, type PopularGame } from '../api';
 import Artwork from '../components/Artwork';
 import GameDialog from '../components/GameDialog';
@@ -39,13 +39,16 @@ export default function AdminScreen() {
                     <h1 className='srvc:font-header srvc:text-2xl srvc:font-semibold srvc:text-foreground'>Server Creator</h1>
                     <p className='srvc:mt-1 srvc:text-sm srvc:leading-relaxed srvc:text-foreground/70'>Games users can create servers from, and how much they may use.</p>
                 </div>
-                <Button className='srvc:shrink-0' disabled={!data.data?.eggs.length} onClick={() => setEditing('new')}>
-                    Add game
-                </Button>
+                <div className='srvc:flex srvc:shrink-0 srvc:items-center srvc:gap-3'>
+                    {data.data && data.data.eggs.length === 0 && <p className='srvc:text-xs srvc:text-muted-foreground'>Create an egg in the panel first.</p>}
+                    <Button disabled={!data.data?.eggs.length} onClick={() => setEditing('new')}>
+                        Add game
+                    </Button>
+                </div>
             </header>
 
             {!data.data || !quota ? (
-                data.isError ? <p className='srvc:text-sm srvc:text-destructive'>{httpErrorToHuman(data.error)}</p> : <Spinner centered size={Spinner.Size.LARGE} />
+                data.isError ? <ServerError message={httpErrorToHuman(data.error)} onRetry={() => data.refetch()} /> : <Spinner centered size={Spinner.Size.LARGE} />
             ) : (
                 <div className='srvc:grid srvc:gap-6'>
                     {data.data.games.length === 0 ? (
